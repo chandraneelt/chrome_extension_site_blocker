@@ -1,9 +1,16 @@
 // =========================
 // Constants
 // =========================
-// Support both Chrome and Firefox (browser.* vs chrome.*)
-if (typeof chrome === 'undefined' && typeof browser !== 'undefined') { var chrome = browser; }
-if (typeof browser === 'undefined' && typeof chrome !== 'undefined') { var browser = chrome; }
+// Cross-browser API: Firefox uses `browser`, Chrome uses `chrome`
+// This IIFE runs before anything else and ensures `chrome` is always defined
+(function() {
+  const api = (typeof browser !== 'undefined' && browser.storage) ? browser :
+               (typeof chrome !== 'undefined' && chrome.storage) ? chrome : null;
+  if (!api) return;
+  // Make both `chrome` and `browser` point to the same API object
+  try { if (typeof chrome === 'undefined' || !chrome.storage) Object.defineProperty(window, 'chrome', { value: api, writable: true, configurable: true }); } catch(e) {}
+  try { if (typeof browser === 'undefined' || !browser.storage) Object.defineProperty(window, 'browser', { value: api, writable: true, configurable: true }); } catch(e) {}
+})();
 
 const ADMIN_DASHBOARD_URL = (typeof CONFIG !== 'undefined' && CONFIG.ADMIN_DASHBOARD_URL) ||
                             (typeof self !== 'undefined' && self.CONFIG && self.CONFIG.ADMIN_DASHBOARD_URL) || "";
