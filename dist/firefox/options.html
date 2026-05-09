@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab Policy - Options</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      background: rgb(246, 243, 243);
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      resize: none;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #2980b9;
+    }
+    .btn-secondary {
+      background: #2ecc71;
+    }
+    .btn-secondary:hover {
+      background: #27ae60;
+    }
+    .btn-danger {
+      background: #e74c3c;
+    }
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+    p {
+      color: #666;
+      font-size: 13px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    .info-box {
+      background: #f9f9f9;
+      border-left: 4px solid #667eea;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: #333;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .info-box p {
+      margin: 0 0 5px;
+      font-weight: bold;
+      color: #444;
+    }
+    .info-box ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .info-box li {
+      margin: 3px 0;
+    }
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    .success-message {
+      color: #27ae60;
+      font-size: 14px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    .hidden {
+      display: none;
+    }
+    .password-section {
+      margin-bottom: 20px;
+    }
+    .password-section h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .password-form {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      .container {
+        padding: 20px 25px;
+        max-width: 100%;
+      }
+      h1 {
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+      .btn {
+        padding: 12px 16px;
+        font-size: 14px;
+        min-width: 120px;
+      }
+      .button-group {
+        gap: 10px;
+      }
+      textarea {
+        height: 120px;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      input[type="password"],
+      input[type="text"] {
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px 20px;
+      }
+      h1 {
+        font-size: 18px;
+      }
+      .btn {
+        padding: 10px 14px;
+        font-size: 13px;
+        min-width: 100px;
+      }
+      .button-group {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .btn {
+        width: 100%;
+      }
+      textarea {
+        height: 100px;
+      }
+      .info-box {
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+    }
+
+    @media (max-width: 320px) {
+      .container {
+        padding: 10px 15px;
+      }
+      h1 {
+        font-size: 16px;
+      }
+      .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+    }
+
+    /* Large screens */
+    @media (min-width: 1200px) {
+      .container {
+        max-width: 600px;
+        padding: 40px 50px;
+      }
+      h1 {
+        font-size: 28px;
+      }
+      .btn {
+        padding: 12px 24px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="container">
+    <h1>Admin Access Required</h1>
+    <p>Enter admin password to access settings:</p>
+    <input type="password" id="loginPassword" placeholder="Enter admin password">
+    <div class="button-group">
+      <button id="loginBtn" class="btn">Login</button>
+    </div>
+    <div id="loginError" class="error-message hidden"></div>
+  </div>
+
+  <!-- Setup Screen (first run) -->
+  <div id="setupScreen" class="container hidden">
+    <h1>First-time Setup</h1>
+    <input type="text" id="setupPcCode" placeholder="PC code / name (e.g., Lab-PC-12)">
+    <input type="password" id="setupPassword" placeholder="Admin password">
+    <input type="password" id="setupConfirm" placeholder="Confirm admin password">
+    <div class="button-group">
+      <button id="completeSetup" class="btn btn-danger">Complete Setup</button>
+    </div>
+    <div id="setupMessage" class="hidden"></div>
+  </div>
+
+  <!-- Role Selection Screen (after setup) -->
+  <div id="roleScreen" class="container hidden">
+    <h1>Select Role</h1>
+    <div class="button-group">
+      <button id="roleStudent" class="btn">Student</button>
+      <button id="roleAdmin" class="btn btn-danger">Admin</button>
+    </div>
+  </div>
+
+  <!-- Student Screen: enter class code -->
+  <div id="studentScreen" class="container hidden">
+    <h1>Enter Class Code</h1>
+    <input type="text" id="classCode" placeholder="Class code">
+    <input type="text" id="rollNumber" placeholder="Roll number">
+    <div class="button-group">
+      <button id="submitClassCode" class="btn">Submit</button>
+      <button id="backToRoles" class="btn btn-secondary">Back</button>
+    </div>
+    <div id="studentMessage" class="hidden"></div>
+  </div>
+
+  <!-- Main Settings Screen -->
+  <div id="mainScreen" class="container hidden">
+    <h1>Whitelist Manager</h1>
+    
+    <!-- Password Change Section -->
+    <div class="password-section">
+      <div class="button-group">
+        <button id="togglePasswordForm" class="btn btn-danger">Change Password</button>
+        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+      </div>
+      
+      <div id="passwordForm" class="password-form hidden">
+        <h3>Change Admin Password</h3>
+        <input type="password" id="currentPassword" placeholder="Current password">
+        <input type="password" id="newPassword" placeholder="New password">
+        <input type="password" id="confirmPassword" placeholder="Confirm new password">
+        <div class="button-group">
+          <button id="changePasswordBtn" class="btn btn-danger">Update Password</button>
+          <button id="cancelPasswordChange" class="btn btn-secondary">Cancel</button>
+        </div>
+        <div id="passwordMessage" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- Device Status -->
+    <div class="info-box" id="deviceStatusBox">
+      <p>Device Status</p>
+      <div id="deviceIdRow">ID: <code id="deviceId">loading…</code></div>
+      <div id="heartbeatRow">Last heartbeat: <span id="lastHeartbeat">—</span></div>
+      <div class="button-group" style="margin-top:10px;">
+        <button id="heartbeatNow" class="btn">Send Heartbeat Now</button>
+        <button id="copyDeviceId" class="btn btn-secondary">Copy Device ID</button>
+        <button id="openAdmin" class="btn">Open Admin Dashboard</button>
+      </div>
+      <div id="deviceMessage" class="hidden"></div>
+    </div>
+
+    <div class="info-box">
+      <p>PC Code</p>
+      <input type="text" id="adminPcCode" placeholder="PC code / name (e.g., Lab-PC-12)">
+      <div class="button-group" style="margin-top:10px;">
+        <button id="savePcCode" class="btn">Save PC Code</button>
+      </div>
+      <div id="pcCodeMessage" class="hidden"></div>
+    </div>
+
+    <!-- Whitelist Management -->
+    <textarea id="whitelist" placeholder="Enter allowed domains or URLs..."></textarea>
+    
+    <div class="button-group">
+      <button id="save" class="btn">Save Whitelist</button>
+      <button id="export" class="btn btn-secondary">Export Logs (CSV)</button>
+    </div>
+    
+    <div id="whitelistMessage" class="hidden"></div>
+
+    <div class="info-box">
+      <p>Enter one rule per line. Examples:</p>
+      <ul>
+        <li><code>w3schools.com</code> — allow entire site</li>
+        <li><code>*.example.com</code> — allow all subdomains</li>
+        <li><code>https://www.w3schools.com/python/*</code> — allow only the Python section</li>
+        <li><code>https://www.w3schools.com/python/default.asp</code> — allow one exact page</li>
+        <li><code>https://domain.com/page/</code> — allow a specific path prefix</li>
+      </ul>
+      <p style="margin-top:8px;font-size:12px;color:#888;">
+        Use <code>*</code> as a wildcard to match any characters in a URL path or query string.
+      </p>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="utils.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

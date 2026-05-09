@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Lab Policy Whitelist icon</title>
+  <desc id="desc">A browser shield with a check mark and policy lines.</desc>
+  <defs>
+    <linearGradient id="bg" x1="12" y1="10" x2="116" y2="118" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#155e75"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#bg)"/>
+  <path d="M64 26c15 10 26 12 38 13v22c0 23-14 37-38 47-24-10-38-24-38-47V39c12-1 23-3 38-13Z" fill="#ecfeff"/>
+  <path d="m51 66 8 8 19-22" fill="none" stroke="#0f766e" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <rect x="34" y="90" width="60" height="6" rx="3" fill="#99f6e4"/>
+  <rect x="34" y="101" width="42" height="6" rx="3" fill="#99f6e4"/>
+</svg>

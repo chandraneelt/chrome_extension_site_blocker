@@ -1,0 +1,61 @@
+{
+  "manifest_version": 2,
+  "name": "Lab Policy Whitelist",
+  "version": "1.0.1",
+  "description": "Whitelist-only browsing with history logging for lab PCs.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "lab-policy-whitelist@pragament",
+      "strict_min_version": "109.0"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "webNavigation",
+    "alarms",
+    "https://www.google-analytics.com/*",
+    "https://firestore.googleapis.com/*",
+    "https://securetoken.googleapis.com/*",
+    "https://identitytoolkit.googleapis.com/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["config.js", "background.js"],
+    "persistent": false
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "browser_action": {
+    "default_title": "Lab Policy",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": ["vendor/browser-polyfill.min.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    "blocked.html",
+    "blocked.js",
+    "content.css"
+  ]
+}
