@@ -1,7 +1,12 @@
 // =========================
 // Constants
 // =========================
-const ADMIN_DASHBOARD_URL = (self.CONFIG && self.CONFIG.ADMIN_DASHBOARD_URL) || "";
+// Support both Chrome and Firefox (browser.* vs chrome.*)
+if (typeof chrome === 'undefined' && typeof browser !== 'undefined') { var chrome = browser; }
+if (typeof browser === 'undefined' && typeof chrome !== 'undefined') { var browser = chrome; }
+
+const ADMIN_DASHBOARD_URL = (typeof CONFIG !== 'undefined' && CONFIG.ADMIN_DASHBOARD_URL) ||
+                            (typeof self !== 'undefined' && self.CONFIG && self.CONFIG.ADMIN_DASHBOARD_URL) || "";
 
 // =========================
 // DOM Utilities
@@ -40,7 +45,9 @@ async function loadWhitelistTextarea() {
     classWishlistCache.wishlist.forEach(r => set.add(r));
   }
 
-  if (self.CONFIG && Array.isArray(self.CONFIG.REQUIRED_RULES)) {
+  if ((typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.REQUIRED_RULES))) {
+    CONFIG.REQUIRED_RULES.forEach(r => set.add(r));
+  } else if (typeof self !== 'undefined' && self.CONFIG && Array.isArray(self.CONFIG.REQUIRED_RULES)) {
     self.CONFIG.REQUIRED_RULES.forEach(r => set.add(r));
   }
 
@@ -288,9 +295,11 @@ $("changePasswordBtn").addEventListener("click", async () => {
 $("save").addEventListener("click", async () => {
   let lines = normalizeLines($("whitelist").value);
   // Ensure required rules are present
-  if (self.CONFIG && Array.isArray(self.CONFIG.REQUIRED_RULES)) {
+  const requiredRules = (typeof CONFIG !== 'undefined' && CONFIG.REQUIRED_RULES) ||
+                        (typeof self !== 'undefined' && self.CONFIG && self.CONFIG.REQUIRED_RULES) || [];
+  if (Array.isArray(requiredRules) && requiredRules.length) {
     const set = new Set(lines);
-    self.CONFIG.REQUIRED_RULES.forEach(r => set.add(r));
+    requiredRules.forEach(r => set.add(r));
     lines = Array.from(set);
   }
 
