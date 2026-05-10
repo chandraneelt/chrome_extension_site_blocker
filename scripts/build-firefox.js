@@ -87,8 +87,11 @@ bg = bg.replace(/try\s*\{\s*importScripts\('config\.js'\);\s*\}\s*catch\s*\(e\)\
 // Remove keepalive: true from fetch options (Firefox doesn't support it in background)
 bg = bg.replace(/,?\s*keepalive:\s*true/g, '');
 
-// Replace chrome://new-tab-page-third-party/ with about:newtab
+// Replace chrome:// URLs with about: equivalents
 bg = bg.replace(/chrome:\/\/new-tab-page-third-party\//g, 'about:newtab');
+
+// Replace all chrome. API calls with browser. in background.js
+bg = bg.replace(/\bchrome\.(storage|runtime|tabs|alarms|webNavigation)\b/g, 'browser.$1');
 
 // Add browser-compat shim import at top
 bg = `// Load browser compatibility shim\ntry { importScripts('browser-compat.js'); } catch(e) {}\n\n` + bg;
@@ -96,11 +99,18 @@ bg = `// Load browser compatibility shim\ntry { importScripts('browser-compat.js
 fs.writeFileSync(bgPath, bg);
 console.log('  Patched: background.js (Firefox compatibility)');
 
-// Patch content.js for Firefox:
-// Replace chrome:// checks with about: equivalents
+// Patch options.js for Firefox: replace chrome. with browser. API calls
+const optionsPath = path.join(DIST, 'options.js');
+let optionsJs = fs.readFileSync(optionsPath, 'utf8');
+optionsJs = optionsJs.replace(/\bchrome\.(storage|runtime|tabs|alarms|webNavigation)\b/g, 'browser.$1');
+fs.writeFileSync(optionsPath, optionsJs);
+console.log('  Patched: options.js (replaced chrome. with browser.)');
+
+// Patch content.js for Firefox
 const contentPath = path.join(DIST, 'content.js');
 let content = fs.readFileSync(contentPath, 'utf8');
 content = content.replace(/chrome:\/\//g, 'about:');
+content = content.replace(/\bchrome\.(storage|runtime|tabs)\b/g, 'browser.$1');
 fs.writeFileSync(contentPath, content);
 console.log('  Patched: content.js (Firefox compatibility)');
 

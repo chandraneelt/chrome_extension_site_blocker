@@ -33,12 +33,12 @@ function withRequiredRules(lines = []) {
 
 // Generate or fetch persistent device ID
 async function getOrCreateDeviceId() {
-  const { deviceId } = await chrome.storage.local.get("deviceId");
+  const { deviceId } = await browser.storage.local.get("deviceId");
   if (deviceId) return deviceId;
 
   const newId = crypto.getRandomValues(new Uint8Array(16))
     .reduce((s, b) => s + b.toString(16).padStart(2, "0"), "");
-  await chrome.storage.local.set({ deviceId: newId });
+  await browser.storage.local.set({ deviceId: newId });
   return newId;
 }
 
@@ -88,7 +88,7 @@ async function sendToGA(eventName, eventParams = {}) {
 // sign-in to get a refresh_token, then exchanging it via STS to an access token.
 async function getFirebaseAccessToken() {
   const now = Date.now();
-  const { fbToken = null } = await chrome.storage.local.get('fbToken');
+  const { fbToken = null } = await browser.storage.local.get('fbToken');
   if (fbToken && fbToken.access && fbToken.access.expiresAt - 60_000 > now) {
     return fbToken.access.token;
   }
@@ -119,7 +119,7 @@ async function getFirebaseAccessToken() {
     const accessToken = tokenJson.access_token;
     const expiresInMs = parseInt(tokenJson.expires_in || '3600', 10) * 1000;
     const record = { refreshToken, access: { token: accessToken, expiresAt: now + expiresInMs } };
-    await chrome.storage.local.set({ fbToken: record });
+    await browser.storage.local.set({ fbToken: record });
     return accessToken;
   } catch (e) {
     return null;
@@ -227,7 +227,7 @@ async function fetchClassWishlist(classCode) {
  */
 async function getCombinedWhitelist() {
   // Get local admin whitelist
-  const { whitelist = [] } = await chrome.storage.local.get('whitelist');
+  const { whitelist = [] } = await browser.storage.local.get('whitelist');
   let combined = [...whitelist];
   
   // Add required rules
@@ -236,10 +236,10 @@ async function getCombinedWhitelist() {
   }
   
   // Get student's class code and fetch their class wishlist
-  const { studentInfo = {} } = await chrome.storage.local.get('studentInfo');
+  const { studentInfo = {} } = await browser.storage.local.get('studentInfo');
   if (studentInfo.classCode) {
     // Check cache first (valid for 5 minutes)
-    const { classWishlistCache } = await chrome.storage.local.get('classWishlistCache');
+    const { classWishlistCache } = await browser.storage.local.get('classWishlistCache');
     const now = Date.now();
     
     if (classWishlistCache && 
@@ -255,7 +255,7 @@ async function getCombinedWhitelist() {
       combined = [...combined, ...classWishlist];
       
       // Cache the result
-      await chrome.storage.local.set({
+      await browser.storage.local.set({
         classWishlistCache: {
           classCode: studentInfo.classCode,
           wishlist: classWishlist,
@@ -285,7 +285,7 @@ async function postJSON(path, data) {
 }
 
 // On install: register device, set uninstall URL, and start heartbeat alarm
-chrome.runtime.onInstalled.addListener(async () => {
+browser.runtime.onInstalled.addListener(async () => {
   console.log('[LabPolicy] service worker installed');
   const id = await getOrCreateDeviceId();
   const backendBase = getConfiguredBackendBase();
@@ -296,46 +296,46 @@ chrome.runtime.onInstalled.addListener(async () => {
   // Set uninstall callback URL
   try {
     if (backendBase) {
-      chrome.runtime.setUninstallURL(`${backendBase}/uninstalled?id=${encodeURIComponent(id)}`);
+      browser.runtime.setUninstallURL(`${backendBase}/uninstalled?id=${encodeURIComponent(id)}`);
     }
   } catch (e) {}
 
   // Create repeating heartbeat alarm
-  chrome.alarms.create("heartbeat", { periodInMinutes: HEARTBEAT_MINUTES });
+  browser.alarms.create("heartbeat", { periodInMinutes: HEARTBEAT_MINUTES });
 });
 
 // On browser startup
-chrome.runtime.onStartup.addListener(() => {
+browser.runtime.onStartup.addListener(() => {
   console.log('[LabPolicy] service worker startup');
 });
 
 // Heartbeat on alarm
-chrome.alarms.onAlarm.addListener(async (alarm) => {
+browser.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== "heartbeat") return;
   const id = await getOrCreateDeviceId();
   const ts = Date.now();
   const ok = await postJSON(`/heartbeat`, { id, ts });
-  await chrome.storage.local.set({ lastHeartbeat: { ts, ok } });
+  await browser.storage.local.set({ lastHeartbeat: { ts, ok } });
 });
 
 // Message API for options page
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
     if (message && message.type === "getDeviceStatus") {
       const id = await getOrCreateDeviceId();
-      const { lastHeartbeat = null } = await chrome.storage.local.get("lastHeartbeat");
+      const { lastHeartbeat = null } = await browser.storage.local.get("lastHeartbeat");
       sendResponse({ id, lastHeartbeat });
     } else if (message && message.type === "heartbeatNow") {
       const id = await getOrCreateDeviceId();
       const ts = Date.now();
       const ok = await postJSON(`/heartbeat`, { id, ts });
-      await chrome.storage.local.set({ lastHeartbeat: { ts, ok } });
+      await browser.storage.local.set({ lastHeartbeat: { ts, ok } });
       sendResponse({ ok, ts });
     } else if (message && message.type === "refreshWishlist") {
       // Clear cache to force refresh
-      await chrome.storage.local.remove('classWishlistCache');
+      await browser.storage.local.remove('classWishlistCache');
       const requestedClassCode = String(message.classCode || '').trim();
-      const { studentInfo = {} } = await chrome.storage.local.get('studentInfo');
+      const { studentInfo = {} } = await browser.storage.local.get('studentInfo');
       const classCode = requestedClassCode || studentInfo.classCode || '';
 
       if (classCode) {
@@ -349,7 +349,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
 
-        await chrome.storage.local.set({
+        await browser.storage.local.set({
           whitelist: withRequiredRules(wishlist),
           classWishlistCache: {
             classCode,
@@ -372,8 +372,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       console.log('[site-blocker] logChatGptPrompt received', { prompt });
       const deviceId = await getOrCreateDeviceId();
-      const { pcCode = '' } = await chrome.storage.local.get('pcCode');
-      const { studentInfo = {} } = await chrome.storage.local.get('studentInfo');
+      const { pcCode = '' } = await browser.storage.local.get('pcCode');
+      const { studentInfo = {} } = await browser.storage.local.get('studentInfo');
 
       await writeLogToFirestore({
         url: 'https://chatgpt.com/',
@@ -403,8 +403,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       console.log(`[site-blocker] logAiPrompt received from ${siteName}`, { prompt });
       const deviceId = await getOrCreateDeviceId();
-      const { pcCode = '' } = await chrome.storage.local.get('pcCode');
-      const { studentInfo = {} } = await chrome.storage.local.get('studentInfo');
+      const { pcCode = '' } = await browser.storage.local.get('pcCode');
+      const { studentInfo = {} } = await browser.storage.local.get('studentInfo');
 
       await writeLogToFirestore({
         url: siteUrl,
@@ -501,8 +501,8 @@ async function logVisit(url, title, tabId, allowed) {
     const deviceId = await getOrCreateDeviceId();
 
     // Read data safely
-    const { pcCode = '' } = await chrome.storage.local.get('pcCode');
-    const { studentInfo = {} } = await chrome.storage.local.get('studentInfo');
+    const { pcCode = '' } = await browser.storage.local.get('pcCode');
+    const { studentInfo = {} } = await browser.storage.local.get('studentInfo');
 
     // Write to Firestore (existing behavior)
     await writeLogToFirestore({
@@ -535,11 +535,16 @@ async function logVisit(url, title, tabId, allowed) {
 
 
 // Handle navigation
-chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
+browser.webNavigation.onBeforeNavigate.addListener(async (details) => {
   if (details.frameId !== 0) return; // only main-frame
 
   // Ignore navigation to the extension's own URLs and the new tab page
-  if (details.url.startsWith(chrome.runtime.getURL('')) || details.url === "about:newtab") {
+  if (details.url.startsWith(browser.runtime.getURL('')) || 
+      details.url === "about:newtab" ||
+      details.url.startsWith("about:") ||
+      details.url.startsWith("moz-extension://") ||
+      details.url.startsWith("chrome://") ||
+      details.url.startsWith("chrome-extension://")) {
     return;
   }
 
@@ -548,12 +553,12 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   const allowed = isAllowed(details.url, whitelist);
 
   if (!allowed) {
-    chrome.tabs.update(details.tabId, {
-      url: chrome.runtime.getURL("blocked.html") + "?orig=" + encodeURIComponent(details.url)
+    browser.tabs.update(details.tabId, {
+      url: browser.runtime.getURL("blocked.html") + "?orig=" + encodeURIComponent(details.url)
     });
   }
 
-  chrome.tabs.get(details.tabId, (tab) => {
+  browser.tabs.get(details.tabId, (tab) => {
     const title = tab?.title || "Untitled";
     console.log('[LabPolicy] logging visit', { url: details.url, allowed });
     logVisit(details.url, title, details.tabId, allowed);
@@ -561,16 +566,18 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
 });
 
 // Fallback: also listen to tab updates when a page completes loading
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== 'complete' || !tab.url) return;
-  if (tab.url.startsWith(chrome.runtime.getURL(''))) return;
+  if (tab.url.startsWith(browser.runtime.getURL(''))) return;
   if (tab.url.startsWith('chrome://')) return;
+  if (tab.url.startsWith('about:')) return;
+  if (tab.url.startsWith('moz-extension://')) return;
   try {
     console.log('[LabPolicy] tabs.onUpdated complete', tab.url);
     const whitelist = await getCombinedWhitelist();
     const allowed = isAllowed(tab.url, whitelist);
     if (!allowed) {
-      chrome.tabs.update(tabId, { url: chrome.runtime.getURL('blocked.html') + '?orig=' + encodeURIComponent(tab.url) });
+      browser.tabs.update(tabId, { url: browser.runtime.getURL('blocked.html') + '?orig=' + encodeURIComponent(tab.url) });
     }
     logVisit(tab.url, tab.title || 'Untitled', tabId, allowed);
   } catch (e) {}

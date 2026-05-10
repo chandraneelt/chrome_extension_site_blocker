@@ -22,7 +22,7 @@ function initFab() {
   if (document.getElementById('labClassFab')) return;
 
   function hasExtensionContext() {
-    return typeof chrome !== 'undefined' && Boolean(chrome.runtime?.id);
+    return typeof chrome !== 'undefined' && Boolean(browser.runtime?.id);
   }
 
   function applyFabPosition(position) {
@@ -175,7 +175,7 @@ function initFab() {
     const nextPosition = fab.dataset.position === 'left' ? 'right' : 'left';
     applyFabPosition(nextPosition);
     toggleFabPositionBtn.textContent = getNextPositionLabel();
-    await chrome.storage.local.set({ labClassFabPosition: nextPosition });
+    await browser.storage.local.set({ labClassFabPosition: nextPosition });
     console.debug('[site-blocker] labClassFab position updated', { nextPosition });
   });
 
@@ -189,7 +189,7 @@ function initFab() {
     }
 
     try {
-      const storageState = await chrome.storage.local.get([
+      const storageState = await browser.storage.local.get([
         'studentInfo',
         'pcCode',
         'labClassFabPosition',
@@ -259,7 +259,7 @@ function initFab() {
 
     try {
       console.debug('[site-blocker] validating class code against Firestore');
-      const refreshResponse = await chrome.runtime.sendMessage({ type: 'refreshWishlist', classCode: code });
+      const refreshResponse = await browser.runtime.sendMessage({ type: 'refreshWishlist', classCode: code });
       console.debug('[site-blocker] refreshWishlist response received', refreshResponse);
 
       if (!refreshResponse?.success) {
@@ -267,8 +267,8 @@ function initFab() {
         return;
       }
 
-      console.debug('[site-blocker] saving studentInfo to chrome.storage.local');
-      await chrome.storage.local.set({ studentInfo: { classCode: code, rollNumber: roll } });
+      console.debug('[site-blocker] saving studentInfo to browser.storage.local');
+      await browser.storage.local.set({ studentInfo: { classCode: code, rollNumber: roll } });
 
       console.debug('[site-blocker] wishlist refresh completed, refreshing panel display');
       await updateDisplay();
@@ -298,9 +298,9 @@ function initFab() {
       }
 
       try {
-        await chrome.storage.local.remove('studentInfo');
+        await browser.storage.local.remove('studentInfo');
         // Clear wishlist cache when student info is cleared
-        await chrome.storage.local.remove('classWishlistCache');
+        await browser.storage.local.remove('classWishlistCache');
         await updateDisplay();
         panel.classList.remove('open');
       } catch (error) {
@@ -318,7 +318,7 @@ function initFab() {
   });
 
   // Auto-update button if changed from options page
-  chrome.storage.onChanged.addListener((changes) => {
+  browser.storage.onChanged.addListener((changes) => {
     if (changes.studentInfo || changes.pcCode || changes.labClassFabPosition || changes.whitelist || changes.classWishlistCache) {
       updateDisplay();
     }
@@ -366,7 +366,7 @@ function createPromptLogger(siteName, siteUrl) {
     lastLoggedAt = now;
     try {
       console.log(`[site-blocker] ${siteName} prompt detected`, { prompt });
-      const response = await chrome.runtime.sendMessage({
+      const response = await browser.runtime.sendMessage({
         type: 'logAiPrompt',
         prompt,
         siteName,

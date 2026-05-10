@@ -5,10 +5,10 @@
 // This IIFE runs before anything else and ensures `chrome` is always defined
 (function() {
   const api = (typeof browser !== 'undefined' && browser.storage) ? browser :
-               (typeof chrome !== 'undefined' && chrome.storage) ? chrome : null;
+               (typeof chrome !== 'undefined' && browser.storage) ? chrome : null;
   if (!api) return;
   // Make both `chrome` and `browser` point to the same API object
-  try { if (typeof chrome === 'undefined' || !chrome.storage) Object.defineProperty(window, 'chrome', { value: api, writable: true, configurable: true }); } catch(e) {}
+  try { if (typeof chrome === 'undefined' || !browser.storage) Object.defineProperty(window, 'chrome', { value: api, writable: true, configurable: true }); } catch(e) {}
   try { if (typeof browser === 'undefined' || !browser.storage) Object.defineProperty(window, 'browser', { value: api, writable: true, configurable: true }); } catch(e) {}
 })();
 
@@ -33,7 +33,7 @@ function normalizeLines(text) {
 }
 
 async function loadWhitelistTextarea() {
-  const { whitelist = [], classWishlistCache = null, studentInfo = {} } = await chrome.storage.local.get([
+  const { whitelist = [], classWishlistCache = null, studentInfo = {} } = await browser.storage.local.get([
     "whitelist",
     "classWishlistCache",
     "studentInfo"
@@ -62,7 +62,7 @@ async function loadWhitelistTextarea() {
 }
 
 async function loadPcCodeInput() {
-  const { pcCode = "" } = await chrome.storage.local.get("pcCode");
+  const { pcCode = "" } = await browser.storage.local.get("pcCode");
   if ($("adminPcCode")) {
     $("adminPcCode").value = pcCode;
   }
@@ -72,7 +72,7 @@ async function loadPcCodeInput() {
 document.addEventListener("DOMContentLoaded", async () => {
   await initializePassword();
   // Decide which screen to show
-  const { setupComplete } = await chrome.storage.local.get("setupComplete");
+  const { setupComplete } = await browser.storage.local.get("setupComplete");
   if (setupComplete) {
     setHidden($("setupScreen"), true);
     setHidden($("roleScreen"), false);
@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-chrome.storage.onChanged.addListener((changes) => {
+browser.storage.onChanged.addListener((changes) => {
   if (!document.getElementById("mainScreen") || $("mainScreen").classList.contains("hidden")) return;
 
   if (changes.whitelist || changes.classWishlistCache || changes.studentInfo) {
@@ -94,7 +94,7 @@ chrome.storage.onChanged.addListener((changes) => {
 
 // Initialize default password if not set
 async function initializePassword() {
-  const { adminPassword } = await chrome.storage.local.get("adminPassword");
+  const { adminPassword } = await browser.storage.local.get("adminPassword");
   if (!adminPassword) {
     // Legacy default password is removed; keep for migration if needed
   }
@@ -130,7 +130,7 @@ async function showMainScreen() {
 // Login functionality
 $("loginBtn").addEventListener("click", async () => {
   const enteredPassword = $("loginPassword").value;
-  const { adminPasswordHash, adminSalt } = await chrome.storage.local.get(["adminPasswordHash", "adminSalt"]);
+  const { adminPasswordHash, adminSalt } = await browser.storage.local.get(["adminPasswordHash", "adminSalt"]);
   const ok = await verifyPassword(enteredPassword, adminSalt, adminPasswordHash);
   if (ok) {
     showMainScreen();
@@ -163,7 +163,7 @@ $("completeSetup").addEventListener("click", async () => {
   if (pw !== pw2) return showSetupMessage("Passwords do not match.", "error");
 
   const { salt, digestHex } = await hashPassword(pw);
-  await chrome.storage.local.set({ adminPasswordHash: digestHex, adminSalt: salt, pcCode, setupComplete: true });
+  await browser.storage.local.set({ adminPasswordHash: digestHex, adminSalt: salt, pcCode, setupComplete: true });
   showSetupMessage("Setup complete!", "success");
   // Directly take admin to whitelist/settings for first-time configuration
   setHidden($("setupScreen"), true);
@@ -192,11 +192,11 @@ $("submitClassCode").addEventListener("click", async () => {
   const roll = $("rollNumber").value.trim();
   if (!code) return showStudentMessage("Enter class code.", "error");
   if (!roll) return showStudentMessage("Enter roll number.", "error");
-  const refreshResponse = await chrome.runtime.sendMessage({ type: "refreshWishlist", classCode: code });
+  const refreshResponse = await browser.runtime.sendMessage({ type: "refreshWishlist", classCode: code });
   if (!refreshResponse?.success) {
     return showStudentMessage(refreshResponse?.message || "Class code was not found in Firestore.", "error");
   }
-  await chrome.storage.local.set({ studentInfo: { classCode: code, rollNumber: roll } });
+  await browser.storage.local.set({ studentInfo: { classCode: code, rollNumber: roll } });
   await loadWhitelistTextarea();
   showStudentMessage("Submitted.", "success");
 });
@@ -207,7 +207,7 @@ $("savePcCode").addEventListener("click", async () => {
     return showPcCodeMessage("Enter a PC code (min 2 chars).", "error");
   }
 
-  await chrome.storage.local.set({ pcCode });
+  await browser.storage.local.set({ pcCode });
   showPcCodeMessage("PC code updated successfully.", "success");
   await refreshDeviceStatus();
 });
@@ -231,7 +231,7 @@ $("cancelPasswordChange").addEventListener("click", () => {
 // Device status buttons
 $("heartbeatNow").addEventListener("click", async () => {
   setDeviceMessage("Sending heartbeat…", "success");
-  const resp = await chrome.runtime.sendMessage({ type: "heartbeatNow" });
+  const resp = await browser.runtime.sendMessage({ type: "heartbeatNow" });
   if (resp && resp.ok) {
     setDeviceMessage("Heartbeat sent successfully.", "success");
   } else {
@@ -241,7 +241,7 @@ $("heartbeatNow").addEventListener("click", async () => {
 });
 
 $("copyDeviceId").addEventListener("click", async () => {
-  const { id } = await chrome.runtime.sendMessage({ type: "getDeviceStatus" }) || {};
+  const { id } = await browser.runtime.sendMessage({ type: "getDeviceStatus" }) || {};
   if (id) {
     await navigator.clipboard.writeText(id);
     setDeviceMessage("Device ID copied to clipboard.", "success");
@@ -256,7 +256,7 @@ $("openAdmin").addEventListener("click", async () => {
     return;
   }
 
-  const { id } = await chrome.runtime.sendMessage({ type: "getDeviceStatus" }) || {};
+  const { id } = await browser.runtime.sendMessage({ type: "getDeviceStatus" }) || {};
   const url = id ? `${adminUrl}?id=${encodeURIComponent(id)}` : adminUrl;
   window.open(url, "_blank");
 });
@@ -267,7 +267,7 @@ $("changePasswordBtn").addEventListener("click", async () => {
   const newPassword = $("newPassword").value;
   const confirmPassword = $("confirmPassword").value;
 
-  const { adminPasswordHash, adminSalt } = await chrome.storage.local.get(["adminPasswordHash", "adminSalt"]);
+  const { adminPasswordHash, adminSalt } = await browser.storage.local.get(["adminPasswordHash", "adminSalt"]);
   const ok = await verifyPassword(currentPassword, adminSalt, adminPasswordHash);
   if (!ok) {
     showPasswordMessage("Current password is incorrect.", "error");
@@ -285,7 +285,7 @@ $("changePasswordBtn").addEventListener("click", async () => {
   }
   
   const { salt, digestHex } = await hashPassword(newPassword);
-  await chrome.storage.local.set({
+  await browser.storage.local.set({
     adminPasswordHash: digestHex,
     adminSalt: salt,
     passwordChangedFromDefault: true
@@ -310,7 +310,7 @@ $("save").addEventListener("click", async () => {
     lines = Array.from(set);
   }
 
-  await chrome.storage.local.set({ whitelist: lines });
+  await browser.storage.local.set({ whitelist: lines });
   await loadWhitelistTextarea();
   
   if (lines.length === 0) {
@@ -322,7 +322,7 @@ $("save").addEventListener("click", async () => {
 
 // Export logs to CSV
 $("export").addEventListener("click", async () => {
-  const { logs = [] } = await chrome.storage.local.get("logs");
+  const { logs = [] } = await browser.storage.local.get("logs");
 
   let csv = "URL,Title,Timestamp,TabID,Allowed\n";
   logs.forEach(log => {
@@ -404,7 +404,7 @@ function showPcCodeMessage(message, type) {
 
 async function refreshDeviceStatus() {
   try {
-    const resp = await chrome.runtime.sendMessage({ type: "getDeviceStatus" });
+    const resp = await browser.runtime.sendMessage({ type: "getDeviceStatus" });
     const idEl = $("deviceId");
     const hbEl = $("lastHeartbeat");
     if (resp) {

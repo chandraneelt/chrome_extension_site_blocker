@@ -540,7 +540,12 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   if (details.frameId !== 0) return; // only main-frame
 
   // Ignore navigation to the extension's own URLs and the new tab page
-  if (details.url.startsWith(chrome.runtime.getURL('')) || details.url === "chrome://new-tab-page-third-party/") {
+  if (details.url.startsWith(chrome.runtime.getURL('')) || 
+      details.url === "chrome://new-tab-page-third-party/" ||
+      details.url.startsWith("about:") ||
+      details.url.startsWith("moz-extension://") ||
+      details.url.startsWith("chrome://") ||
+      details.url.startsWith("chrome-extension://")) {
     return;
   }
 
@@ -566,6 +571,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== 'complete' || !tab.url) return;
   if (tab.url.startsWith(chrome.runtime.getURL(''))) return;
   if (tab.url.startsWith('chrome://')) return;
+  if (tab.url.startsWith('about:')) return;
+  if (tab.url.startsWith('moz-extension://')) return;
   try {
     console.log('[LabPolicy] tabs.onUpdated complete', tab.url);
     const whitelist = await getCombinedWhitelist();
